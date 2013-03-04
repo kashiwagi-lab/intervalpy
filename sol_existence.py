@@ -24,18 +24,18 @@ import fdFunc as func
 import krawczyk as kraw
 
 
+
 def fdFunc(no):
 	""" define target function from fdFunc-module
 
 	"""
 	funcObj = func.fdFunc(no)
-	global x
 	x = funcObj.x
 	y = funcObj.getFunc()
-	return y
+	return x, y
 
 
-def checkSomeSolExsist(no, obj, method = 0):
+def checkSomeSolExsist(no, obj, x=None, y=None, method=0):
 	""" execute checking solutions exist in the region.
 
 	If the region has some solutions, return True.
@@ -43,20 +43,20 @@ def checkSomeSolExsist(no, obj, method = 0):
 
 	"""
 	selectedMethod = selectMethod(no, obj, method)
-	return selectedMethod(no, obj)
+	return selectedMethod(no, obj, x, y)
 
 
-def checkOnlySolExist(no, obj, method = 4):
+def checkOnlySolExist(no, obj, x=None, y=None, method=4):
 	""" execute checking only solution exist in the region.
 
 	If the region has only-one-solution, return True.
 
 	"""
 	selectedMethod = selectMethod(obj, method)
-	return selectedMethod(no, obj)
+	return selectedMethod(no, obj, x, y)
 
 
-def checkNoSolExist(no, obj, method = 0):
+def checkNoSolExist(no, obj, x=None, y=None, method=0):
 	""" execute checking of non-existence region
 
 	If interval-region does not have solution (No-solution), return True.
@@ -64,7 +64,7 @@ def checkNoSolExist(no, obj, method = 0):
 
 	"""
 	selectedMethod = selectMethod(obj, method)
-	return op.not_(selectedMethod(no, obj))
+	return op.not_(selectedMethod(no, obj, x, y))
 
 
 def selectMethod(obj, method = 0):
@@ -103,21 +103,21 @@ def selectMethod(obj, method = 0):
 #########################################################################################
 
 
-def useFuncIntVal(no, I):
+def useFuncIntVal(no, I, x=None, y=None):
 	""" method-1:
 
 	if F(I) not including 0, I is non-existence region.
 	by using interval operation.
 
 	"""
-	intVal = fdFuncIntervalVal(no, I)
+	intVal = fdFuncIntervalVal(no, I, x, y)
 	for i in range(len(intVal)):
 		if interval.subset(0, intVal.item(i)) == False:
 			return False
 	return True
 
 
-def useKrawczyk(no, obj):
+def useKrawczyk(no, obj, x=None, y=None):
 	""" method-2:
 
 	if subset of K(I) and I is empty-set, I is non-existence region.
@@ -129,7 +129,7 @@ def useKrawczyk(no, obj):
 	return checkCap(I, KI)
 
 
-def useMeanValForm(no, obj):
+def useMeanValForm(no, obj, x=None, y=None):
 	""" method-3:
 
 	if the mean value form of I not including, I is non-existence region.
@@ -140,7 +140,7 @@ def useMeanValForm(no, obj):
 		I = obj
 	elif isinstance(obj, kraw.data):
 		I = obj.I
-	MIList = meanValueForm(no, I)
+	MIList = meanValueForm(no, I, x, y)
 	for i in range(len(MIList)):
 		if interval.subset(0, MIList.item(i)) == False:
 			return False
@@ -155,7 +155,7 @@ def useMeanValForm(no, obj):
 ################################################################################
 
 
-def onlySolKrawczyk(no, obj):
+def onlySolKrawczyk(no, obj, x=None, y=None):
 	""" method-4:
 
 	if the krawczyk include only one solution, return True.
@@ -176,11 +176,12 @@ def onlySolKrawczyk(no, obj):
 #####################################################################
 
 
-def fdFuncIntervalVal(no, I):
+def fdFuncIntervalVal(no, I, x=None, y=None):
 	""" return fd_func(I)
 
 	"""
-	y = fdFunc(no)
+	if x is None or y is None:
+		x, y = fdFunc(no)
 	mtrx_int = []
 	point = {}
 	if len(I) == len(x) == len(y):
@@ -206,19 +207,20 @@ def checkCap(I1, I2):
 	return True
 
 
-def meanValueForm(no, I):
+def meanValueForm(no, I, x=None, y=None):
 	""" return value of mean value form list
 
 	dimention of list is dim-x * dim-y
 
 	"""
-	y = fdFunc(no)
+	if x is None or y is None:
+		x, y = fdFunc(no)
 	point_c = {}
 	fc = []
 	Ic = []
 	# auto-differentiation with FuncDesigner
-	dF = kraw.fd_autoDif(no, I)
-	y = fdFunc(no)
+	dF = kraw.fd_autoDif(no, I, x, y)
+	x, y = fdFunc(no)
 	for i in range(len(x)):
 		point_c[x[i]] = interval.mid(I.item(i))
 	for j in range(len(x)):

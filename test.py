@@ -20,6 +20,23 @@ import resource as rc
 
 ######################################################################
 #
+# Initialize function.
+#
+######################################################################
+
+def fdFunc(no):
+	""" define target function from fdFunc-module
+
+	"""
+	funcObj = func.fdFunc(no)
+	x = funcObj.x
+	y = funcObj.getFunc()
+	return x, y
+
+
+
+######################################################################
+#
 # Calculate time executing all-solution.
 #
 ######################################################################
@@ -28,12 +45,13 @@ def executeTime(no, I = None, loop = 1):
 	""" execute calcurating time of all-solution
 
 	"""
+	x, y = fdFunc(no)
 	if I == None:
 		funcObj = func.fdFunc(no)
 		I = funcObj.initI()
 	time_str = time.time()
 	for i in range(loop):
-		solI = allsol.improveVerification(no, allsol.allSolution(no, I))
+		solI = allsol.improveVerification(no, allsol.allSolution(no, I, x, y), x, y)
 	time_end = time.time()
 	printTime(I, solI, calcurateTime(time_str, time_end))
 
@@ -68,12 +86,13 @@ def executeRUsage(no, I = None, loop = 1):
 	""" execute calcurating all resource-usage of all-solution
 
 	"""
+	x, y = fdFunc(no)
 	if I == None:
 		funcObj = func.fdFunc(no)
 		I = funcObj.initI()
 	str = time.time()
 	for i in range(loop):
-		solI = allsol.improveVerification(no, allsol.allSolution(no, I))
+		solI = allsol.improveVerification(no, allsol.allSolution(no, I, x, y), x, y)
 	end = time.time()
 	rUsage= rc.getrusage(rc.RUSAGE_SELF)
 	pageSize = rc.getpagesize()
@@ -89,7 +108,10 @@ def printRUsage(no, I, solI, rUsage, pageSize):
 	print 'Input: '
 	print I
 	print 'Output: '
-	print_r(solI)
+	if solI is None:
+		print solI
+	else:
+		print_r(solI)
 	print '--------------------------------------------------'
 	print 'All resource-usage: '
 	print_r(rUsage)
@@ -118,8 +140,8 @@ def proveSolution(no, solI):
 
 
 
-#funcNo = 0
+funcNo = 13
 #executeTime(funcNo)
-#calctime = executeRUsage(funcNo)[2]
-#print "//////////////////////////////////////////////"
-#print "Time: ", calctime, " sec."
+calctime = executeRUsage(funcNo)[2]
+print "//////////////////////////////////////////////"
+print "Time: ", calctime, " sec."

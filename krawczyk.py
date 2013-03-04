@@ -40,25 +40,30 @@ class data(object):
 
 	""" Method """
 
-	def __init__(self, no, I):
+	def __init__(self, no, I, x=None, y=None):
 		""" initialize data class
 
 		"""
 		self.no = no
 		self.I = I
-		self.KI = krawczyk(self.no, self.I)
+		if x is None or y is None:
+			self.x, self.y = fdFunc(self.no)
+		else:
+			self.x = x
+			self.y = y
+		self.KI = krawczyk(self.no, self.I, self.x, self.y)
 
 	def setDeterminant(self):
 		""" setting determinant of I: self.detI
 
 		"""
-		self.detI = getDetKrawczykL(self.no, self.I)
+		self.detI = getDetKrawczykL(self.no, self.I, self.x, self.y)
 
 	def setKrawczyk(self):
 		""" setting krawczyk of I: self.KI
 
 		"""
-		self.KI = krawczyk(self.no, self.I)
+		self.KI = krawczyk(self.no, self.I, self.x, self.y)
 
 
 
@@ -74,16 +79,17 @@ def fdFunc(no):
 
 	"""
 	funcObj = func.fdFunc(no)
-	global x
 	x = funcObj.x
 	y = funcObj.getFunc()
-	return y
+	return x, y
 
 
-def getDetKrawczykL(no, I):
+def getDetKrawczykL(no, I, x, y):
 	""" getting determinant of L in krawczyk
 
 	"""
+	if x is None or y is None:
+		x, y = fdFunc(no)
 	# 中間値cの初期化
 	c = [0.0 for k in range(len(I))]
 	# 中間値の生成
@@ -93,19 +99,21 @@ def getDetKrawczykL(no, I):
 		# 区間intIの中間値
 		c[i] = interval.mid(intI)
 	# funcの１階微分: f'(c)
-	df = fd_autoDif(no, c)
+	df = fd_autoDif(no, c, x, y)
 	# f'(c)の微分結果を行列化
-	if len(x) == len(fdFunc(no)):
+	if len(x) == len(y):
 		df_mtrx = np.matrix(np.reshape(df, (len(x), len(x))))
 	else:
 		raise ValueError('Unsupported not square-matrix')
 	return np.linalg.det(df_mtrx)
 
 
-def krawczyk(no, I):
+def krawczyk(no, I, x=None, y=None):
 	""" verify approx by krawczyk method
 
 	"""
+	if x is None or y is None:
+		x, y = fdFunc(no)
 	# 中間値cの初期化
 	c = [0.0 for k in range(len(I))]
 	# 中間値の生成
@@ -115,9 +123,9 @@ def krawczyk(no, I):
 		# 区間intIの中間値
 		c[i] = interval.mid(intI)
 	# funcの１階微分: f'(c)
-	df = fd_autoDif(no, c)
+	df = fd_autoDif(no, c, x, y)
 	# f'(c)の微分結果を行列化
-	if len(x) == len(fdFunc(no)):
+	if len(x) == len(y):
 		df_mtrx = np.matrix(np.reshape(df, (len(x), len(x))))
 	else:
 		raise ValueError('Unsupported not square-matrix')
@@ -127,7 +135,7 @@ def krawczyk(no, I):
 	# numpyによる逆行列の生成
 	iL = np.linalg.inv(df_mtrx)
 	# f'の区間包囲F'(I)
-	dF = fd_autoDif(no, I)
+	dF = fd_autoDif(no, I, x, y)
 	# F'(I)の微分結果を行列化
 	dF_mtrx = np.matrix(np.reshape(dF, (len(x), len(x))))
 	# 単位行列
@@ -135,7 +143,7 @@ def krawczyk(no, I):
 	# 縮小性の確認
 	dis = E - (iL * dF_mtrx)
 	# ノルムの計算
-	norm = getNorm(dis)
+	norm = getNorm(dis, x)
 	# 縮小性の判定
 	if norm >= 1.0:
 		#raise ValueError('not contractibility')
@@ -143,18 +151,19 @@ def krawczyk(no, I):
 		#print 'C'
 		pass
 	# 解の保証
-	fc = fdFunc_val(no, c)
+	fc = fdFunc_val(no, c, x, y)
 	fc_mtrx = np.matrix(np.reshape(fc, (len(fc), 1)))
 	c_mtrx = np.matrix(np.reshape(c, (len(c), 1)))
 	K = c_mtrx - iL * fc_mtrx + dis * (I - c_mtrx)
 	return K
 
 
-def fdFunc_val(no, c):
+def fdFunc_val(no, c, x, y):
 	""" return fdFunc(a)
 
 	"""
-	y = fdFunc(no)
+	#if x is None or y is None:
+	#	x, y = fdFunc(no)
 	point = {}
 	fc = []
 	for i in range(len(c)):
@@ -167,12 +176,13 @@ def fdFunc_val(no, c):
 	return fc
 
 
-def fd_autoDif(no, c):
+def fd_autoDif(no, c, x, y):
 	""" auto-differentiation with FuncDesigner
 
 	"""
 	# fdによる関数の取得
-	y = fdFunc(no)
+	#if x is None or y is None:
+	#	x, y = fdFunc(no)
 	# 微分値
 	point = {}
 	for k in range(len(c)):
@@ -196,7 +206,7 @@ def fd_autoDif(no, c):
 	return df
 
 
-def getNorm(mtrx):
+def getNorm(mtrx, x):
 	""" return norm of matrix including interval
 
 	"""

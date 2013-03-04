@@ -41,96 +41,102 @@ def initList(I):
 	return List
 
 
-def fineAdjustI(I):
-	""" spreading width of interval if mid is 0.
-
-	"""
-	adjustI = []
-	for i in xrange(len(I)):
-		if interval.mid(I.item(i)) == 0.:
-			if (i+1)%2 == 0:
-				adjustI.append([interval(I.item(i).inf, I.item(i).sup + 1e-3)])
-			else:
-				adjustI.append([interval(I.item(i).inf - 1e-3, I.item(i).sup)])
-		else:
-			adjustI.append([interval(I.item(i).inf, I.item(i).sup)])
-	return np.mat(adjustI)
-
 def allSolution(no, I, x=None, y=None):
 	""" function of all solution
 
 	"""
 
 	""" step-1 """
-	# 初期領域の分割時に0が境界に乗らないように微調整
-	adjustI = fineAdjustI(I)
+	#print "step-1:"
 	# リストList の初期化
-	List = initList(adjustI)
+	List = initList(I)
 	# 唯一解を持つリスト
 	solI = []
 	# 分割回数の保持
 	numSplit = 0
+	flag = None
 	# 対象funcの設定
 	if x is None or y is None:
 		x, y = fdFunc(no)
 
 	""" step-2 """
 	#print "step-2"
-	print "=========================== START ============================="
-	print "List of intervals: ",
+	#print "=========================== START ============================="
+	#print "List of intervals: ",
 	while List != []:
-		if numSplit%1000 == 0:
-			print numSplit, ": ", str(len(List))
+		if numSplit%50 == 0:
+			#print numSplit, ": ", str(len(List))
+			pass
+		#print List
 		# リストList の先頭要素を取り出しI とする
 		I = List.pop(0)
 
 		""" step-3 """
+		#print "step-3:"
 		# F(I) によりI に解が存在するか判定(弱い非存在判定)
 		if solex.checkNoSolExist(no, I, x, y, method = 1) == True:
 			# I を初期化してstep 2 へ戻る
-			I = []
-			continue
+			#I = []
+			#continue
+			flag = 3
+			break
 		else:
 			pass
 
 		""" step-4 """
+		#print "step-4:"
 		# Krawczyk 法による唯一解の判定
-		krawObj = kraw.data(no, I, x, y)
+		krawObj = kraw.data(no, I)
 		if not krawObj.KI is False:
 			if solex.checkOnlySolExist(no, krawObj, x, y, method = 4) == True:
-				print I
+				#print I
 				solI.append(I)
-				continue
+				#continue
+				flag = 4
+				break
 		else:
 			pass
 
 		""" step-5 """
+		#print "step-5:"
 		# 区間I, K(I) が空集合であればI に解は存在しない(強い非存在判定)
 		if not krawObj.KI is False:
 			# the krawczyk-method
 			if solex.checkNoSolExist(no, krawObj, x, y, method = 2) == True:
-				I = []
-				continue
+				#I = []
+				#continue
+				flag = 5
+				break
 		else:
 			# the mean-value-form
 			if solex.checkNoSolExist(no, I, x, y, method = 3) == True:
-				I = []
-				continue
+				#I = []
+				#continue
+				flag = 5
+				break
 
 		""" step-6 """
+		#print "step-6:"
 		# 区間の分割
+		splitI = []
 		for i in range(len(split(I))):
-			List.append(split(I)[i])
+			#List.append(split(I)[i])
+			splitI.append(split(I)[i])
 		numSplit += 1
-		continue
+		#continue
+		flag = 6
+		return (no, flag, splitI)
 
 	# 唯一解を持つ区間を返す
 	# 分割回数の表示
-	print "The number of split-I: "+str(numSplit)
-	return solI
+	#print '\n\r'
+	#print "The number of split-I: "+str(numSplit)
+	#return solI
+	return (no, flag, [I])
 
 
-def improveVerification(no, solIList, x=None, y=None):
+#def improveVerification(no, solIList):
+def improveVerification(no, solI, x=None, y=None):
 	""" higher numerical verification
 
 	"""
@@ -140,26 +146,25 @@ def improveVerification(no, solIList, x=None, y=None):
 	countImprovedSolI = 0
 	# max-loop of improve soilI
 	maxLoop = 100
-	if len(solIList) == 0:
+	#if len(solIList) == 0:
+	if len(solI) == 0:
 		msg = 'Assigned equation has no-solution in the interval-list.'
-		print msg
 		print "============================ END =============================="
-		return None
-	improvedSolIList = []
-	for i in range(maxLoop):
-		countImprovedSolI += 1
-		if len(solIList) != 0:
-			solI = solIList.pop(0)
-			if evaluateImproveVerification(solI) == True:
-				improvedSolIList.append(solI)
-			else:
-				# 区間反復法
-				solIList.append(kraw.krawczyk(no, solI, x, y))
-		else:
-			break
-	print "The number of improving verification: "+str(countImprovedSolI)
-	print "============================ END =============================="
-	return improvedSolIList
+		return msg
+	#improvedSolIList = []
+	#countImprovedSolI += 1
+	#solI = solIList.pop(0)
+	# 区間反復法
+	#solIList.append(kraw.krawczyk(no, solI))
+	flag = None
+	if evaluateImproveVerification(solI) == True:
+		flag = True
+	else:
+		flag = False
+	return (no, flag, [kraw.krawczyk(no, solI, x, y)])
+	#print "The number of improving verification: "+str(countImprovedSolI)
+	#print "============================ END =============================="
+	#return improvedSolIList
 
 
 def split(I):
@@ -192,7 +197,8 @@ def evaluateImproveVerification(solI):
 
 	"""
 	# criteria of allowable-error
-	allowableError = 1e-15
+	#allowableError = 1e-7
+	allowableError = 1e-1
 	for i in range(len(solI)):
 		# calcurate width-error of interval
 		widthError = interval.width(solI.item(i))
@@ -200,6 +206,27 @@ def evaluateImproveVerification(solI):
 			return False
 	return True
 
+
+def convertJson(no, flag, IList):
+	"""
+
+	"""
+	import json
+	data = {}
+	list = {}
+	cnt = 0
+	data['no'] = no
+	data['flag'] = flag
+	for I in IList:
+		val = []
+		for i in xrange(len(I)):
+			val.append((I.item(i).inf, I.item(i).sup))
+		#list.append(val)
+		list[cnt] = val
+		cnt = cnt + 1
+	data['I'] = list
+	#return json.dumps(data, indent=4)
+	return json.dumps(data)
 
 
 
