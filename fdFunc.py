@@ -32,7 +32,9 @@ class fdFunc(object):
 		11: 2,\
 		12: 2,\
 		13: 2,\
-		14: 5\
+		14: 5,\
+		15: 3,\
+		16: 4\
 		}
 
 	def __init__(self, no):
@@ -75,6 +77,10 @@ class fdFunc(object):
 			return self.Shinohara2
 		elif self.no == 14:
 			return self.Shinohara3
+		elif self.no == 15:
+			return self.Cyclo
+		elif self.no == 16:
+			return self.Kinkox
 		else:
 			raise ValueError("Variable 'no' is invalid value.")
 
@@ -117,7 +123,7 @@ class fdFunc(object):
 		y[1] = x[0] - x[1]
 		if retI == True:
 			#return np.matrix([[interval(-1.1, 1.)], [interval(-1., 1.)]])
-			return np.matrix([[interval(-1., 1.)], [interval(-1., 1.)]])
+			return np.matrix([[interval(-10., 10.)], [interval(-10., 10.)]])
 		return y
 
 
@@ -153,8 +159,7 @@ class fdFunc(object):
 		y[0] = x[0] * x[0] - x[1]
 		y[1] = -x[0] * x[0] + 2 * x[0]  - x[1]
 		if retI == True:
-			return np.matrix([[interval(-11., 10.)], [interval(-10., 11.)]])
-			#return np.matrix([[interval(-10., 10.)], [interval(-10., 10.)]])
+			return np.matrix([[interval(-10., 10.)], [interval(-10., 10.)]])
 		return y
 
 
@@ -188,10 +193,18 @@ class fdFunc(object):
 		"""
 		y = [0.0 for i in range(2)]
 		x[0], x[1] = fd.oovars('x0', 'x1')
+		'''
 		y[0] = fd.sin(x[0]) * fd.cos(x[0]) - x[1]
 		y[1] = x[0] * x[0] - 6 * x[0] + 8 - x[1]
+		'''
+		'''
+		y[0] = fd.sin(x[0])*fd.cos(x[1]) - x[0] + 1.
+		y[1] = fd.cos(x[0])*fd.sin(x[1]) + x[1] - 1.
+		'''
+		y[0] = fd.sin(x[0]) + fd.cos(x[1]) - x[0]
+		y[1] = fd.cos(x[0])*fd.sin(x[1]) - x[1] + 1.
 		if retI == True:
-			return np.matrix([[interval(-6.1, 6.)], [interval(-6., 6.)]])
+			return np.matrix([[interval(-100., 100.)], [interval(-100., 100.)]])
 		return y
 
 
@@ -212,7 +225,7 @@ class fdFunc(object):
 		y[2] = 2*x[0] - x[1] + 3*x[2] - 9
 		if retI == True:
 			#return np.matrix([[interval(-1.1, 5.)], [interval(-1., 5.)], [interval(-1., 5.1)]])
-			return np.matrix([[interval(-50.1, 50.)], [interval(-50., 50.)], [interval(-50., 50.1)]])
+			return np.matrix([[interval(-50., 50.)], [interval(-50., 50.)], [interval(-50., 50.)]])
 		return y
 
 
@@ -289,14 +302,14 @@ class fdFunc(object):
 		(x1, x2) = None
 
 		"""
-		#param = 0.01
-		param = 0.1
+		param = 0.001
+		#param = 0.1
 		y = [0.0 for i in range(2)]
 		x[0], x[1] = fd.oovars('x0', 'x1')
 		y[0] = x[0]*x[0] - x[1]
 		y[1] = x[0]*x[0] - x[1] + param
 		if retI == True:
-			return np.matrix([[interval(-1., 1.)], [interval(-1., 1.)]])
+			return np.matrix([[interval(-10., 10.)], [interval(-10., 10.)]])
 		return y
 
 
@@ -313,7 +326,7 @@ class fdFunc(object):
 		y[0] = -1./(1. + x[0]) + x[1]/(1. + x[1])
 		y[1] = 1./(1. + x[0]) - x[1]/(x[0] + x[1])
 		if retI == True:
-			return np.matrix([[interval(0.01, 100.)], [interval(0.001, 100.)]])
+			return np.matrix([[interval(1e-4, 100.)], [interval(1e-4, 100.)]])
 			#return np.matrix([[interval(0.1, 10.)], [interval(0.01, 11.)]])
 		return y
 
@@ -326,15 +339,15 @@ class fdFunc(object):
 		true value = 5?
 
 		"""
-		B = 0.
-		#B = 0.15
+		#B = 0.
+		B = 0.15
 		y = [0.0 for i in range(2)]
 		x[0], x[1] = fd.oovars('x0', 'x1')
 		y[0] = -1.*x[0] + B + 0.1*x[1] + 0.75*(x[0]*x[0]*x[0] + x[0]*x[1]*x[1])
 		y[1] = -1.*x[1] + 0.1*x[0] + 0.75*(x[0]*x[0]*x[1] + x[1]*x[1]*x[1])
 		if retI == True:
-			return np.matrix([[interval(-1e+8-1., 1e+8)], [interval(-1e+8, 1e+8+1.)]])
-			#return np.matrix([[interval(-1e+5-1., 1e+5)], [interval(-1e+5, 1e+5+1.)]])
+			return np.matrix([[interval(-1e+8, 1e+8)], [interval(-1e+8, 1e+8)]])
+			#return np.matrix([[interval(-1e+4, 1e+4)], [interval(-1e+4, 1e+4)]])
 		return y
 
 
@@ -353,7 +366,7 @@ class fdFunc(object):
 		y = [0.0 for i in range(2)]
 		x[0], x[1] = fd.oovars('x0', 'x1')
 		p = x[0]
-		q= x[1]
+		q = x[1]
 		y[0] = p*p*p*p*p - 10.*p*p*p*q*q + 5.*p*q*q*q*q\
 				- 2.*p*p*p*p + 12.*p*p*q*q - 2.*q*q*q*q\
 				+ 10.*p*p*p - 30.*p*q*q - 9.*p + 3.
@@ -361,7 +374,8 @@ class fdFunc(object):
 				- 8.*p*p*p*q + 8.*p*q*q*q + 30.*p*p*q\
 				-10.*q*q*q - 9.*q
 		if retI == True:
-			return np.matrix([[interval(-5.1, 5.)], [interval(-5., 5.1)]])
+			#return np.matrix([[interval(-5.1, 5.)], [interval(-5., 5.1)]])
+			return np.matrix([[interval(-100., 100.)], [interval(-100., 100.)]])
 		return y
 
 
@@ -399,7 +413,8 @@ class fdFunc(object):
 			- 6.*p*p*q + 2.*q*q*q + 5.*p*p - 5.*q*q\
 			+ 24.*p*q - 8.*p - 8.*q + 4.
 		if retI == True:
-			return np.matrix([[interval(-3.1, 3.)], [interval(-3., 3.1)]])
+			#return np.matrix([[interval(-3., 3.)], [interval(-3., 3.)]])
+			return np.matrix([[interval(-10., 10.)], [interval(-10., 10.)]])
 		return y
 
 
@@ -416,21 +431,65 @@ class fdFunc(object):
 		"""
 		y = [0.0 for i in range(5)]
 		x[0], x[1], x[2], x[3], x[4] = fd.oovars('x0', 'x1', 'x2', 'x3', 'x4')
-		p = x[0];
-		q = x[1];
-		r = x[2];
-		s = x[3];
-		t = x[4];
+		p = x[0]
+		q = x[1]
+		r = x[2]
+		s = x[3]
+		t = x[4]
 		y[0] = p*p*p - 2.*p*q + r + 0.75*p + 1.
 		y[1] = p*p*q - q*q - p*r +s + 0.75*q + 0.25
 		y[2] = p*p*r - p*s - q*r + t + 0.75*r + 0.75
 		y[3] = p*p*s - p*t - q*s + 0.75*s
 		y[4] = p*p*t - q*t + 0.75*t - 0.25
 		if retI == True:
-			return np.matrix([[interval(-1.5, 2.)],\
-							  [interval(-0.6, 3.)],\
-							  [interval(-1.5, 2.5)],\
-							  [interval(-0.5, 1.9)],\
-							  [interval(-1., 1.)]])
+			'''
+			return np.matrix([[interval(-1.501, 2.)],\
+							  [interval(-0.6001, 3.)],\
+							  [interval(-1.501, 2.5)],\
+							  [interval(-0.501, 1.9)],\
+							  [interval(-1.01, 1.002)]])
+			'''
+			return np.matrix([[interval(-3., 3.)],\
+							  [interval(-3., 3.)],\
+							  [interval(-3., 3.)],\
+							  [interval(-3., 3.)],\
+							  [interval(-3., 3.)]])
+		return y
+
+
+	def Cyclo(self, x, retI = False):
+		""" no = 15: Cyclo
+
+		true value
+		(x1, x2, x3) = ?
+
+		"""
+		y = [0.0 for i in range(3)]
+		x[0], x[1], x[2] = fd.oovars('x0', 'x1', 'x2')
+		y[0] = -x[1]*x[1]*x[2]*x[2] - x[1]*x[1] + 24.*x[1]*x[2] - x[2]*x[2] -13.
+		y[1] = -x[0]*x[0]*x[2]*x[2] - x[2]*x[2] + 24.*x[2]*x[0] - x[0]*x[0] -13.
+		y[2] = -x[0]*x[0]*x[1]*x[1] - x[0]*x[0] + 24.*x[0]*x[1] - x[1]*x[1] -13.
+		if retI == True:
+			#return np.matrix([[interval(0., 1e5)], [interval(0., 1e5)], [interval(0., 1e5)]])
+			return np.matrix([[interval(-1e4, 1e4)], [interval(-1e4, 1e4)], [interval(-1e4, 1e4)]])
+		return y
+
+
+	def Kinkox(self, x, retI = False):
+		""" no = 16: Kinkox
+
+		"""
+		y = [0.0 for i in range(4)]
+		x[0], x[1], x[2], x[3] = fd.oovars('x0', 'x1', 'x2', 'x3')
+		c1 = x[0]
+		c2 = x[1]
+		s1 = x[2]
+		s2 = x[3]
+		y[0] = -1. + 6.*(c1*c2 - s1*s2) + 10.*c1
+		y[1] = -4. + 6.*(c1*s2 + c2*s1) + 10.*s1
+		y[2] = c1*c1 + s1*s1 - 1
+		y[3] = c2*c2 + s2*s2 - 1
+		if retI == True:
+			return np.matrix([[interval(-10., 10.)], [interval(-10., 10.)], [interval(-10., 10.)], [interval(-10., 10.)]])
 		return y
 

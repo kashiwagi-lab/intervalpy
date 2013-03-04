@@ -50,7 +50,8 @@ class interval(object):
 		組み込み関数str()やprint文によって呼び出される。
 
 		"""
-		return "[" + str(self.inf) + "," + str(self.sup) + "]"
+		#return "[" + str(self.inf) + "," + str(self.sup) + "]"
+		return repr(self)
 
 
 	def __repr__(self):
@@ -440,7 +441,7 @@ class interval(object):
 
 		"""
 		if isinstance(x, interval):
-			return (x.sup + x.inf) / 2
+			return (x.inf + x.sup) / 2
 		else:
 			return x
 
